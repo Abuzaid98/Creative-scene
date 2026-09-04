@@ -23,13 +23,23 @@
    ============================================================ */
 
 /* ---------- 1. Reset & base ---------- */
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-html, body { width: 100%; height: 100%; }
+html,
+body {
+  width: 100%;
+  height: 100%;
+}
 
 body {
-  overflow: hidden;                       /* the scene never scrolls */
-  background: #05070f;                    /* visible for at most one frame */
+  overflow: hidden;
+  /* the scene never scrolls */
+  background: #05070f;
+  /* visible for at most one frame */
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   color: #fff;
 }
@@ -38,24 +48,30 @@ body {
    Defaults describe deep night, so the scene still reads correctly
    if JavaScript is disabled. */
 :root {
-  --sky-1: #06080f;   /* zenith  */
+  --sky-1: #06080f;
+  /* zenith  */
   --sky-2: #0b1020;
   --sky-3: #131a33;
-  --sky-4: #1d2647;   /* horizon */
+  --sky-4: #1d2647;
+  /* horizon */
 
-  --sun-x: 50%;  --sun-y: 128%;
+  --sun-x: 50%;
+  --sun-y: 128%;
   --sun-opacity: 0;
   --sun-core: #fff3d6;
   --glow-color: #ffd9a8;
   --sun-glow: 0;
   --sun-glow-scale: 3;
 
-  --moon-x: 50%; --moon-y: 20%;
+  --moon-x: 50%;
+  --moon-y: 20%;
   --moon-opacity: 1;
 
   --star-opacity: 1;
-  --daylight: 0;                          /* 0 = night, 1 = full day  */
-  --golden: 0;                            /* 0..1 warm horizon light  */
+  --daylight: 0;
+  /* 0 = night, 1 = full day  */
+  --golden: 0;
+  /* 0..1 warm horizon light  */
 
   --haze-color: #26314f;
   --haze-opacity: 0.04;
@@ -65,7 +81,7 @@ body {
   --hill-3: #0f1428;
   --meadow: #0a0e1c;
   --grass: #070a15;
-  --bush:  #05070f;
+  --bush: #05070f;
 
   --cabin-wall: #0b0d16;
   --cabin-roof: #070912;
@@ -84,10 +100,29 @@ body {
 /* Let the browser ease the sky gradient between the 1 Hz JS updates.
    @property types each variable as a real <color> so the gradient can
    transition; browsers without @property just step (invisibly small). */
-@property --sky-1 { syntax: "<color>"; inherits: true; initial-value: #06080f; }
-@property --sky-2 { syntax: "<color>"; inherits: true; initial-value: #0b1020; }
-@property --sky-3 { syntax: "<color>"; inherits: true; initial-value: #131a33; }
-@property --sky-4 { syntax: "<color>"; inherits: true; initial-value: #1d2647; }
+@property --sky-1 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #06080f;
+}
+
+@property --sky-2 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #0b1020;
+}
+
+@property --sky-3 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #131a33;
+}
+
+@property --sky-4 {
+  syntax: "<color>";
+  inherits: true;
+  initial-value: #1d2647;
+}
 
 :root {
   transition: --sky-1 1s linear, --sky-2 1s linear, --sky-3 1s linear, --sky-4 1s linear;
@@ -96,7 +131,10 @@ body {
 /* ---------- 3. Boot guard ----------
    First paint is pinned straight to the correct time with no animation.
    script.js removes .booting after the first frame. */
-.booting, .booting *, .booting *::before, .booting *::after {
+.booting,
+.booting *,
+.booting *::before,
+.booting *::after {
   transition: none !important;
 }
 
@@ -105,26 +143,24 @@ body {
   position: fixed;
   inset: 0;
   overflow: hidden;
-  background: linear-gradient(
-    to bottom,
-    var(--sky-1) 0%,
-    var(--sky-2) 34%,
-    var(--sky-3) 62%,
-    var(--sky-4) 100%
-  );
+  background: linear-gradient(to bottom,
+      var(--sky-1) 0%,
+      var(--sky-2) 34%,
+      var(--sky-3) 62%,
+      var(--sky-4) 100%);
 }
 
 /* ---------- 5. Afterglow ---------- */
 .afterglow {
   position: absolute;
-  left: -10%; right: -10%; bottom: 0;
+  left: -10%;
+  right: -10%;
+  bottom: 0;
   height: 58%;
-  background: radial-gradient(
-    120% 100% at var(--sun-x) 100%,
-    rgba(255, 148, 82, 0.55) 0%,
-    rgba(255, 120, 74, 0.14) 40%,
-    transparent 68%
-  );
+  background: radial-gradient(120% 100% at var(--sun-x) 100%,
+      rgba(255, 148, 82, 0.55) 0%,
+      rgba(255, 120, 74, 0.14) 40%,
+      transparent 68%);
   opacity: var(--golden);
   mix-blend-mode: screen;
   transition: opacity 1.5s linear;
@@ -139,23 +175,39 @@ body {
   transition: opacity 1.4s linear;
   pointer-events: none;
 }
+
 .star {
   position: absolute;
   border-radius: 50%;
   background: #fff;
   animation: twinkle var(--tw-dur, 4s) ease-in-out var(--tw-delay, 0s) infinite;
 }
-.star--bright { box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.7); }
+
+.star--bright {
+  box-shadow: 0 0 4px 1px rgba(255, 255, 255, 0.7);
+}
 
 @keyframes twinkle {
-  0%, 100% { opacity: 0.35; }
-  50%      { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 /* ---------- 7. Sun & moon ---------- */
-.celestial { position: absolute; inset: 0; pointer-events: none; }
+.celestial {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
 
-.sun, .moon {
+.sun,
+.moon {
   position: absolute;
   display: grid;
   place-items: center;
@@ -163,44 +215,71 @@ body {
   transition: left 1s linear, top 1s linear, opacity 1s linear;
   will-change: left, top;
 }
-.sun  { left: var(--sun-x);  top: var(--sun-y);  opacity: var(--sun-opacity);
-        width: clamp(40px, 6.2vmin, 66px); aspect-ratio: 1; }
-.moon { left: var(--moon-x); top: var(--moon-y); opacity: var(--moon-opacity);
-        width: clamp(34px, 5.4vmin, 58px); aspect-ratio: 1; }
 
-.sun__core, .moon__disc { grid-area: 1 / 1; width: 100%; height: 100%; border-radius: 50%; }
-.sun__glow, .moon__glow { grid-area: 1 / 1; border-radius: 50%; pointer-events: none; }
+.sun {
+  left: var(--sun-x);
+  top: var(--sun-y);
+  opacity: var(--sun-opacity);
+  width: clamp(40px, 6.2vmin, 66px);
+  aspect-ratio: 1;
+}
+
+.moon {
+  left: var(--moon-x);
+  top: var(--moon-y);
+  opacity: var(--moon-opacity);
+  width: clamp(34px, 5.4vmin, 58px);
+  aspect-ratio: 1;
+}
+
+.sun__core,
+.moon__disc {
+  grid-area: 1 / 1;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.sun__glow,
+.moon__glow {
+  grid-area: 1 / 1;
+  border-radius: 50%;
+  pointer-events: none;
+}
 
 /* crisp bright disc, only a 1-pixel soft rim */
 .sun__core {
   background: radial-gradient(circle at 50% 42%,
-    #ffffff 0%, var(--sun-core) 52%, var(--sun-core) 82%,
-    rgba(255, 220, 170, 0) 100%);
+      #ffffff 0%, var(--sun-core) 52%, var(--sun-core) 82%,
+      rgba(255, 220, 170, 0) 100%);
   box-shadow: 0 0 14px 1px var(--sun-core);
 }
+
 /* wide, soft, NON-blurred atmospheric glow (alpha falloff does the softness) */
 .sun__glow {
   width: calc(100% * var(--sun-glow-scale));
   height: calc(100% * var(--sun-glow-scale));
   opacity: var(--sun-glow);
   background: radial-gradient(circle,
-    var(--glow-color) 0%,
-    rgba(255, 190, 130, 0.16) 26%,
-    rgba(255, 170, 110, 0) 62%);
+      var(--glow-color) 0%,
+      rgba(255, 190, 130, 0.16) 26%,
+      rgba(255, 170, 110, 0) 62%);
   transition: opacity 1.2s linear;
 }
 
 .moon__disc {
   background:
-    radial-gradient(circle at 68% 70%, rgba(0,0,0,0.16) 0 8%, transparent 9%),
-    radial-gradient(circle at 40% 32%, rgba(0,0,0,0.12) 0 6%, transparent 7%),
-    radial-gradient(circle at 58% 48%, rgba(0,0,0,0.10) 0 5%, transparent 6%),
+    radial-gradient(circle at 68% 70%, rgba(0, 0, 0, 0.16) 0 8%, transparent 9%),
+    radial-gradient(circle at 40% 32%, rgba(0, 0, 0, 0.12) 0 6%, transparent 7%),
+    radial-gradient(circle at 58% 48%, rgba(0, 0, 0, 0.10) 0 5%, transparent 6%),
     radial-gradient(circle at 38% 36%, #fdfdf6 0%, #dfe2ec 58%, #c7cad9 100%);
 }
+
 .moon__glow {
-  width: 210%; height: 210%;
+  width: 210%;
+  height: 210%;
   background: radial-gradient(circle,
-    rgba(214, 224, 255, 0.28) 0%, rgba(200, 214, 255, 0) 60%);
+      rgba(214, 224, 255, 0.28) 0%, rgba(200, 214, 255, 0) 60%);
 }
 
 /* ---------- 8. Clouds ---------- */
@@ -212,6 +291,7 @@ body {
   transition: opacity 1.4s linear;
   pointer-events: none;
 }
+
 /* Flat-bottomed cloud: a rounded bar with two circular puffs sitting on it */
 .cloud {
   position: absolute;
@@ -222,6 +302,7 @@ body {
   filter: blur(1px);
   animation: drift var(--dur, 120s) linear var(--delay, 0s) infinite;
 }
+
 .cloud::before,
 .cloud::after {
   content: "";
@@ -230,28 +311,102 @@ body {
   background: var(--cloud-color);
   border-radius: 50%;
 }
-.cloud::before { width: 58%; height: 210%; left: 6%;  }
-.cloud::after  { width: 42%; height: 150%; right: 10%; }
 
-.cloud--1 { --w: 220px; --h: 40px; --dur: 132s; --delay: -14s;  top: 15%; }
-.cloud--2 { --w: 150px; --h: 30px; --dur: 168s; --delay: -70s;  top: 25%; }
-.cloud--3 { --w: 300px; --h: 52px; --dur: 210s; --delay: -120s; top: 9%;  }
-.cloud--4 { --w: 130px; --h: 28px; --dur: 150s; --delay: -40s;  top: 33%; }
+.cloud::before {
+  width: 58%;
+  height: 210%;
+  left: 6%;
+}
+
+.cloud::after {
+  width: 42%;
+  height: 150%;
+  right: 10%;
+}
+
+.cloud--1 {
+  --w: 220px;
+  --h: 40px;
+  --dur: 132s;
+  --delay: -14s;
+  top: 15%;
+}
+
+.cloud--2 {
+  --w: 150px;
+  --h: 30px;
+  --dur: 168s;
+  --delay: -70s;
+  top: 25%;
+}
+
+.cloud--3 {
+  --w: 300px;
+  --h: 52px;
+  --dur: 210s;
+  --delay: -120s;
+  top: 9%;
+}
+
+.cloud--4 {
+  --w: 130px;
+  --h: 28px;
+  --dur: 150s;
+  --delay: -40s;
+  top: 33%;
+}
+
 /* three more groups: different altitude, size, speed and a wide delay
    spread so several are mid-crossing (not all clustered at the edge) the
    moment the page opens, and a couple drift with a slight vertical bob. */
-.cloud--5 { --w: 190px; --h: 34px; --dur: 245s; --delay: -190s; top: 6%;  animation-name: driftBob; }
-.cloud--6 { --w: 110px; --h: 24px; --dur: 118s; --delay: -95s;  top: 29%; }
-.cloud--7 { --w: 260px; --h: 46px; --dur: 280s; --delay: -260s; top: 20%; animation-name: driftBob; }
+.cloud--5 {
+  --w: 190px;
+  --h: 34px;
+  --dur: 245s;
+  --delay: -190s;
+  top: 6%;
+  animation-name: driftBob;
+}
+
+.cloud--6 {
+  --w: 110px;
+  --h: 24px;
+  --dur: 118s;
+  --delay: -95s;
+  top: 29%;
+}
+
+.cloud--7 {
+  --w: 260px;
+  --h: 46px;
+  --dur: 280s;
+  --delay: -260s;
+  top: 20%;
+  animation-name: driftBob;
+}
 
 @keyframes drift {
-  from { transform: translateX(-36vw); }
-  to   { transform: translateX(136vw); }
+  from {
+    transform: translateX(-36vw);
+  }
+
+  to {
+    transform: translateX(136vw);
+  }
 }
+
 @keyframes driftBob {
-  0%   { transform: translate(-36vw, 0); }
-  50%  { transform: translate(50vw, -1.4vh); }
-  100% { transform: translate(136vw, 0.8vh); }
+  0% {
+    transform: translate(-36vw, 0);
+  }
+
+  50% {
+    transform: translate(50vw, -1.4vh);
+  }
+
+  100% {
+    transform: translate(136vw, 0.8vh);
+  }
 }
 
 /* ---------- 8b. Airplane (rare, daytime only) ----------
@@ -264,6 +419,7 @@ body {
   transition: opacity 1.4s linear;
   pointer-events: none;
 }
+
 .airplane {
   position: absolute;
   top: 12%;
@@ -272,9 +428,11 @@ body {
   height: 3px;
   border-radius: 2px;
   background: rgba(255, 255, 255, 0.6);
-  opacity: 0;                              /* base state if the animation is off */
+  opacity: 0;
+  /* base state if the animation is off */
   animation: planeCross 300s linear -55s infinite;
 }
+
 .airplane::after {
   content: "";
   position: absolute;
@@ -285,13 +443,31 @@ body {
   transform: translateY(-50%);
   background: linear-gradient(to left, rgba(255, 255, 255, 0.45), transparent);
 }
+
 /* long, mostly-invisible cycle with one slow, faint crossing — "rare" done
    with plain CSS timing rather than a JS random trigger. */
 @keyframes planeCross {
-  0%, 78%   { transform: translate(-10vw, 6vh); opacity: 0; }
-  80%       { opacity: 1; }
-  92%       { transform: translate(112vw, -5vh); opacity: 1; }
-  94%, 100% { transform: translate(114vw, -5.3vh); opacity: 0; }
+
+  0%,
+  78% {
+    transform: translate(-10vw, 6vh);
+    opacity: 0;
+  }
+
+  80% {
+    opacity: 1;
+  }
+
+  92% {
+    transform: translate(112vw, -5vh);
+    opacity: 1;
+  }
+
+  94%,
+  100% {
+    transform: translate(114vw, -5.3vh);
+    opacity: 0;
+  }
 }
 
 /* ---------- 8c. Shooting star (rare, night only) ----------
@@ -303,6 +479,7 @@ body {
   transition: opacity 1.4s linear;
   pointer-events: none;
 }
+
 .shooting-star {
   position: absolute;
   top: 16%;
@@ -314,6 +491,7 @@ body {
   opacity: 0;
   animation: shoot 95s linear -20s infinite;
 }
+
 .shooting-star::before {
   content: "";
   position: absolute;
@@ -325,17 +503,35 @@ body {
   transform: translateY(-50%) rotate(207deg);
   background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
 }
+
 @keyframes shoot {
-  0%, 96% { transform: translate(0, 0);          opacity: 0; }
-  97%     { opacity: 1; }
-  99%     { transform: translate(-19vw, 9vh);     opacity: 1; }
-  100%    { transform: translate(-21vw, 10.2vh);  opacity: 0; }
+
+  0%,
+  96% {
+    transform: translate(0, 0);
+    opacity: 0;
+  }
+
+  97% {
+    opacity: 1;
+  }
+
+  99% {
+    transform: translate(-19vw, 9vh);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(-21vw, 10.2vh);
+    opacity: 0;
+  }
 }
 
 /* ---------- 9. Haze & hills ---------- */
 .haze {
   position: absolute;
-  left: 0; right: 0;
+  left: 0;
+  right: 0;
   bottom: 30%;
   height: 16%;
   background: linear-gradient(to top, var(--haze-color) 0%, transparent 100%);
@@ -343,17 +539,34 @@ body {
   transition: opacity 1.4s linear;
   pointer-events: none;
 }
+
 .hills {
   position: absolute;
-  left: 0; bottom: 0;
+  left: 0;
+  bottom: 0;
   width: 100%;
   height: 58%;
 }
-.hill { transition: fill 1s linear; }
-.hill--1 { fill: var(--hill-1); }
-.hill--2 { fill: var(--hill-2); }
-.hill--3 { fill: var(--hill-3); }
-.hill--meadow { fill: var(--meadow); }
+
+.hill {
+  transition: fill 1s linear;
+}
+
+.hill--1 {
+  fill: var(--hill-1);
+}
+
+.hill--2 {
+  fill: var(--hill-2);
+}
+
+.hill--3 {
+  fill: var(--hill-3);
+}
+
+.hill--meadow {
+  fill: var(--meadow);
+}
 
 /* Trees and distant homes reuse the existing hill/cabin colours via
    color-mix() — no new JS-driven variables needed. The plain fill above
@@ -365,28 +578,67 @@ body {
   transform-origin: 50% 100%;
   animation: treeSway 9s ease-in-out infinite alternate;
 }
-.tree--hill2 { fill: color-mix(in srgb, var(--hill-2) 60%, black 40%); }
-.tree--hill3 { fill: color-mix(in srgb, var(--hill-3) 60%, black 40%); }
-@keyframes treeSway {
-  from { transform: rotate(0.7deg); }
-  to   { transform: rotate(-0.7deg); }
+
+.tree--hill2 {
+  fill: color-mix(in srgb, var(--hill-2) 60%, black 40%);
 }
 
-.hut-body { fill: #1a2233; transition: fill 1s linear; }
-.hut-roof { fill: #10141f; transition: fill 1s linear; }
+.tree--hill3 {
+  fill: color-mix(in srgb, var(--hill-3) 60%, black 40%);
+}
+
+@keyframes treeSway {
+  from {
+    transform: rotate(0.7deg);
+  }
+
+  to {
+    transform: rotate(-0.7deg);
+  }
+}
+
+.hut-body {
+  fill: #1a2233;
+  transition: fill 1s linear;
+}
+
+.hut-roof {
+  fill: #10141f;
+  transition: fill 1s linear;
+}
+
 .hut-window {
   fill: #ffcf7a;
-  opacity: calc(var(--window-glow) * 0.55);   /* dimmer than the main cabin */
+  opacity: calc(var(--window-glow) * 0.55);
+  /* dimmer than the main cabin */
   transition: opacity 1.4s linear;
 }
+
 /* each home blends further into its own hill the farther away it sits,
    which is what keeps it lower-contrast than the main cabin. */
-.hut--far  .hut-body { fill: color-mix(in srgb, var(--cabin-wall) 30%, var(--hill-1) 70%); }
-.hut--far  .hut-roof { fill: color-mix(in srgb, var(--cabin-roof) 30%, var(--hill-1) 70%); }
-.hut--mid  .hut-body { fill: color-mix(in srgb, var(--cabin-wall) 50%, var(--hill-2) 50%); }
-.hut--mid  .hut-roof { fill: color-mix(in srgb, var(--cabin-roof) 50%, var(--hill-2) 50%); }
-.hut--near .hut-body { fill: color-mix(in srgb, var(--cabin-wall) 65%, var(--hill-3) 35%); }
-.hut--near .hut-roof { fill: color-mix(in srgb, var(--cabin-roof) 65%, var(--hill-3) 35%); }
+.hut--far .hut-body {
+  fill: color-mix(in srgb, var(--cabin-wall) 30%, var(--hill-1) 70%);
+}
+
+.hut--far .hut-roof {
+  fill: color-mix(in srgb, var(--cabin-roof) 30%, var(--hill-1) 70%);
+}
+
+.hut--mid .hut-body {
+  fill: color-mix(in srgb, var(--cabin-wall) 50%, var(--hill-2) 50%);
+}
+
+.hut--mid .hut-roof {
+  fill: color-mix(in srgb, var(--cabin-roof) 50%, var(--hill-2) 50%);
+}
+
+.hut--near .hut-body {
+  fill: color-mix(in srgb, var(--cabin-wall) 65%, var(--hill-3) 35%);
+}
+
+.hut--near .hut-roof {
+  fill: color-mix(in srgb, var(--cabin-roof) 65%, var(--hill-3) 35%);
+}
 
 /* ---------- 10. Cabin ---------- */
 .cabin {
@@ -394,13 +646,32 @@ body {
   left: 23%;
   bottom: 13.5%;
   width: clamp(68px, 12.5vmin, 120px);
-  isolation: isolate;                     /* keeps the shadow/halo behind the cabin only */
+  isolation: isolate;
+  /* keeps the shadow/halo behind the cabin only */
 }
-.cabin > svg { display: block; width: 100%; height: auto; overflow: visible; }
 
-.cabin-wall { fill: var(--cabin-wall); transition: fill 1s linear; }
-.cabin-roof { fill: var(--cabin-roof); transition: fill 1s linear; }
-.cabin-door { fill: var(--cabin-door); transition: fill 1s linear; }
+.cabin>svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+
+.cabin-wall {
+  fill: var(--cabin-wall);
+  transition: fill 1s linear;
+}
+
+.cabin-roof {
+  fill: var(--cabin-roof);
+  transition: fill 1s linear;
+}
+
+.cabin-door {
+  fill: var(--cabin-door);
+  transition: fill 1s linear;
+}
+
 .cabin-window {
   fill: #ffcf7a;
   opacity: var(--window-glow);
@@ -412,20 +683,25 @@ body {
 .cabin::after {
   content: "";
   position: absolute;
-  left: 50%; bottom: 0.5%;
-  width: 180%; height: 15%;
+  left: 50%;
+  bottom: 0.5%;
+  width: 180%;
+  height: 15%;
   transform: translateX(-50%);
   background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.62) 0%, transparent 72%);
   opacity: var(--cabin-shadow);
   filter: blur(2.5px);
   z-index: -1;
 }
+
 /* darker grass gathered around the base */
 .cabin::before {
   content: "";
   position: absolute;
-  left: 50%; bottom: -3%;
-  width: 240%; height: 30%;
+  left: 50%;
+  bottom: -3%;
+  width: 240%;
+  height: 30%;
   transform: translateX(-50%);
   background: radial-gradient(ellipse at center, var(--grass) 0%, transparent 62%);
   opacity: 0.55;
@@ -435,13 +711,19 @@ body {
 /* ---------- 11. Grass & bushes ---------- */
 .grass {
   position: absolute;
-  left: 0; bottom: 0;
+  left: 0;
+  bottom: 0;
   width: 100%;
   height: 10%;
   transform-origin: bottom center;
   animation: sway 12s ease-in-out infinite alternate;
 }
-.grass-line { fill: var(--grass); transition: fill 1s linear; }
+
+.grass-line {
+  fill: var(--grass);
+  transition: fill 1s linear;
+}
+
 .bush {
   fill: var(--bush);
   transition: fill 1s linear;
@@ -449,8 +731,13 @@ body {
 }
 
 @keyframes sway {
-  from { transform: skewX(0.5deg); }
-  to   { transform: skewX(-0.5deg); }
+  from {
+    transform: skewX(0.5deg);
+  }
+
+  to {
+    transform: skewX(-0.5deg);
+  }
 }
 
 /* ---------- 12. Birds (morning) ---------- */
@@ -461,10 +748,12 @@ body {
   transition: opacity 3s ease;
   pointer-events: none;
 }
+
 .flock {
   position: absolute;
   will-change: transform;
 }
+
 /* flock A: left-to-right, higher and slower */
 .flock--a {
   top: 18%;
@@ -473,11 +762,21 @@ body {
   /* negative delay: already mid-sky on first paint, not entering from the edge */
   animation: flyAcross 72s linear -24s infinite;
 }
+
 @keyframes flyAcross {
-  0%   { transform: translate(-16vw, 3vh); }
-  50%  { transform: translate(52vw, -3vh); }
-  100% { transform: translate(118vw, 2vh); }
+  0% {
+    transform: translate(-16vw, 3vh);
+  }
+
+  50% {
+    transform: translate(52vw, -3vh);
+  }
+
+  100% {
+    transform: translate(118vw, 2vh);
+  }
 }
+
 /* flock B: right-to-left, lower and faster — a second, independent group
    so the sky never reads as one flock on a single track */
 .flock--b {
@@ -486,10 +785,19 @@ body {
   height: 40px;
   animation: flyAcrossB 46s linear -9s infinite;
 }
+
 @keyframes flyAcrossB {
-  0%   { transform: translate(118vw, -2vh) scaleX(-1); }
-  50%  { transform: translate(48vw, 4vh)   scaleX(-1); }
-  100% { transform: translate(-16vw, 1vh)  scaleX(-1); }
+  0% {
+    transform: translate(118vw, -2vh) scaleX(-1);
+  }
+
+  50% {
+    transform: translate(48vw, 4vh) scaleX(-1);
+  }
+
+  100% {
+    transform: translate(-16vw, 1vh) scaleX(-1);
+  }
 }
 
 .bird {
@@ -497,13 +805,39 @@ body {
   width: clamp(18px, 2.6vw, 28px);
   aspect-ratio: 3 / 1;
 }
-.flock--a .bird:nth-child(1) { left: 0;    top: 40px; --flap: 0.52s; }
-.flock--a .bird:nth-child(2) { left: 46px; top: 12px; --flap: 0.6s;  }
-.flock--a .bird:nth-child(3) { left: 92px; top: 46px; --flap: 0.46s; }
-.flock--b .bird:nth-child(1) { left: 0;    top: 16px; --flap: 0.62s; }
-.flock--b .bird:nth-child(2) { left: 36px; top: 0;    --flap: 0.5s;  }
 
-.bird::before, .bird::after {
+.flock--a .bird:nth-child(1) {
+  left: 0;
+  top: 40px;
+  --flap: 0.52s;
+}
+
+.flock--a .bird:nth-child(2) {
+  left: 46px;
+  top: 12px;
+  --flap: 0.6s;
+}
+
+.flock--a .bird:nth-child(3) {
+  left: 92px;
+  top: 46px;
+  --flap: 0.46s;
+}
+
+.flock--b .bird:nth-child(1) {
+  left: 0;
+  top: 16px;
+  --flap: 0.62s;
+}
+
+.flock--b .bird:nth-child(2) {
+  left: 36px;
+  top: 0;
+  --flap: 0.5s;
+}
+
+.bird::before,
+.bird::after {
   content: "";
   position: absolute;
   top: 0;
@@ -513,11 +847,37 @@ body {
   border-radius: 60% 60% 0 0 / 100% 100% 0 0;
   animation: flap var(--flap, 0.5s) ease-in-out infinite alternate;
 }
-.bird::before { left: 0;  transform-origin: right center; }
-.bird::after  { right: 0; transform-origin: left center;  animation-name: flapR; }
 
-@keyframes flap  { from { transform: rotate(10deg);  } to { transform: rotate(-16deg); } }
-@keyframes flapR { from { transform: rotate(-10deg); } to { transform: rotate(16deg);  } }
+.bird::before {
+  left: 0;
+  transform-origin: right center;
+}
+
+.bird::after {
+  right: 0;
+  transform-origin: left center;
+  animation-name: flapR;
+}
+
+@keyframes flap {
+  from {
+    transform: rotate(10deg);
+  }
+
+  to {
+    transform: rotate(-16deg);
+  }
+}
+
+@keyframes flapR {
+  from {
+    transform: rotate(-10deg);
+  }
+
+  to {
+    transform: rotate(16deg);
+  }
+}
 
 /* ---------- 13. Fireflies (evening special event) ---------- */
 .fireflies {
@@ -528,6 +888,7 @@ body {
   pointer-events: none;
   z-index: 3;
 }
+
 .firefly {
   position: absolute;
   width: calc(3px * var(--f-scale, 1));
@@ -541,13 +902,29 @@ body {
     fireflyDrift var(--f-dur, 8s) ease-in-out var(--f-delay, 0s) infinite,
     fireflyPulse calc(var(--f-dur, 8s) / 2.2) ease-in-out var(--f-delay, 0s) infinite;
 }
+
 @keyframes fireflyDrift {
-  0%, 100% { transform: translate(0, 0); }
-  50%      { transform: translate(var(--f-x, 14px), calc(-1px * var(--f-rise, 44))); }
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  50% {
+    transform: translate(var(--f-x, 14px), calc(-1px * var(--f-rise, 44)));
+  }
 }
+
 @keyframes fireflyPulse {
-  0%, 100% { opacity: 0.1; }
-  50%      { opacity: 1; }
+
+  0%,
+  100% {
+    opacity: 0.1;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 /* ---------- 14. HUD ---------- */
@@ -560,6 +937,7 @@ body {
   user-select: none;
   z-index: 4;
 }
+
 .hud__time {
   display: flex;
   align-items: baseline;
@@ -569,8 +947,19 @@ body {
   letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
 }
-.hud__ap  { font-size: 0.44em; letter-spacing: 0.18em; opacity: 0.85; }
-.hud__sec { font-size: 0.36em; letter-spacing: 0.1em;  opacity: 0.5;  }
+
+.hud__ap {
+  font-size: 0.44em;
+  letter-spacing: 0.18em;
+  opacity: 0.85;
+}
+
+.hud__sec {
+  font-size: 0.36em;
+  letter-spacing: 0.1em;
+  opacity: 0.5;
+}
+
 .hud__label {
   margin-top: 0.55em;
   font-size: clamp(10px, 1.5vw, 12px);
@@ -581,29 +970,83 @@ body {
 
 /* ---------- 15. Responsive ---------- */
 @media (max-width: 640px) {
-  .hills  { height: 54%; }
-  .cabin  { left: 18%; bottom: 15%; }
-  .haze   { bottom: 24%; }
-  .cloud--3 { --w: 240px; }
+  .hills {
+    height: 54%;
+  }
+
+  .cabin {
+    left: 18%;
+    bottom: 15%;
+  }
+
+  .haze {
+    bottom: 24%;
+  }
+
+  .cloud--3 {
+    --w: 240px;
+  }
 }
 
 /* short landscape (e.g. 844×390): give the ground more room */
 @media (max-height: 460px) {
-  .hills  { height: 70%; }
-  .cabin  { bottom: 20%; }
-  .haze   { bottom: 34%; height: 20%; }
-  .flock  { top: 14%; }
+  .hills {
+    height: 70%;
+  }
+
+  .cabin {
+    bottom: 20%;
+  }
+
+  .haze {
+    bottom: 34%;
+    height: 20%;
+  }
+
+  .flock {
+    top: 14%;
+  }
 }
 
 /* ---------- 16. Reduced motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .star, .cloud, .grass, .flock, .tree, .airplane, .shooting-star,
-  .bird::before, .bird::after, .firefly { animation: none !important; }
-  .flock { transform: translate(56vw, 0); }
-  .firefly { opacity: 0.8; }
-  :root, .scene, .sun, .moon, .stars, .clouds, .haze, .hill,
-  .cabin-window, .afterglow, .birds, .fireflies,
-  .airplane-layer, .night-fx, .hut-window {
+
+  .star,
+  .cloud,
+  .grass,
+  .flock,
+  .tree,
+  .airplane,
+  .shooting-star,
+  .bird::before,
+  .bird::after,
+  .firefly {
+    animation: none !important;
+  }
+
+  .flock {
+    transform: translate(56vw, 0);
+  }
+
+  .firefly {
+    opacity: 0.8;
+  }
+
+  :root,
+  .scene,
+  .sun,
+  .moon,
+  .stars,
+  .clouds,
+  .haze,
+  .hill,
+  .cabin-window,
+  .afterglow,
+  .birds,
+  .fireflies,
+  .airplane-layer,
+  .night-fx,
+  .hut-window {
     transition: none !important;
   }
 }
