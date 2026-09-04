@@ -647,3 +647,26 @@ Scene continuously follows local time, forever, while the page stays open
 10. **Respect `prefers-reduced-motion`.** Accessibility doesn't have to mean "turn off the feature" — the scene stays fully time-accurate under reduced motion, it just stops the idle animations.
 11. **Developer-only test hooks (`?t=`) should be truly opt-in.** The override only activates if the URL parameter is present and valid; with it absent, behavior is 100% unchanged from a normal visitor's experience.
 12. **A one-second update loop is often enough.** Not everything needs `requestAnimationFrame` — matching your update rate to how fast the underlying value actually changes avoids wasted work.
+
+---
+
+## Live Demo
+
+Deployed here: **https://abuzaid-creative-scene.netlify.app**
+
+To see all 24 hours of the scene at once, in a single tab, open the browser console on any page and paste this. It uses the `?t=` [developer time override](#10-developer-time-override) to open 24 iframes — one per hour — inside one new tab, instead of opening 24 separate tabs:
+
+```js
+const urls = Array.from({ length: 24 }, (_, i) =>
+  `https://abuzaid-creative-scene.netlify.app/?t=${i + 1}`
+);
+
+const w = window.open('about:blank', '_blank');
+
+if (w) {
+  urls.forEach(url => w.document.write(
+    `<iframe src="${url}" style="width:100%;height:100vh;border:0"></iframe>`
+  ));
+}
+// gives you one tab containing 24 pages, not 24 tabs.
+```
