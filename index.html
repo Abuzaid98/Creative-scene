@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" class="booting">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
+    <title>Northlight — a day in one window</title>
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+    <!--
+      One landscape, one real clock, one continuous day/night cycle.
+      Every layer is positioned and coloured from CSS custom properties
+      that script.js recalculates from the visitor's local time.
+    -->
+    <main class="scene" aria-label="A landscape that follows your local time of day">
+
+        <!-- Atmospheric light pooled on the horizon around sunrise / sunset -->
+        <div class="afterglow" aria-hidden="true"></div>
+
+        <!-- Starfield — span.star nodes are generated once by JS -->
+        <div class="stars" aria-hidden="true"></div>
+
+        <!-- Morning birds — two independent small flocks around 06:15–08:30,
+             different altitudes, directions, speeds and phase so they never
+             move in lockstep. Both read the same --bird-opacity window. -->
+        <div class="birds" aria-hidden="true">
+            <div class="flock flock--a">
+                <span class="bird"></span>
+                <span class="bird"></span>
+                <span class="bird"></span>
+            </div>
+            <div class="flock flock--b">
+                <span class="bird"></span>
+                <span class="bird"></span>
+            </div>
+        </div>
+
+        <!-- Sun and moon travel along an arc; each has a crisp core + soft glow -->
+        <div class="celestial" aria-hidden="true">
+            <div class="sun">
+                <span class="sun__glow"></span>
+                <span class="sun__core"></span>
+            </div>
+            <div class="moon">
+                <span class="moon__glow"></span>
+                <span class="moon__disc"></span>
+            </div>
+        </div>
+
+        <!-- Slowly drifting clouds — several independent groups, out of sync -->
+        <div class="clouds" aria-hidden="true">
+            <div class="cloud cloud--1"></div>
+            <div class="cloud cloud--2"></div>
+            <div class="cloud cloud--3"></div>
+            <div class="cloud cloud--4"></div>
+            <div class="cloud cloud--5"></div>
+            <div class="cloud cloud--6"></div>
+            <div class="cloud cloud--7"></div>
+        </div>
+
+        <!-- Rare, faint daytime airplane -->
+        <div class="airplane-layer" aria-hidden="true">
+            <div class="airplane"></div>
+        </div>
+
+        <!-- Rare, faint night-only shooting star -->
+        <div class="night-fx" aria-hidden="true">
+            <div class="shooting-star"></div>
+        </div>
+
+        <!-- Distant hills fading into atmospheric haze -->
+        <div class="haze" aria-hidden="true"></div>
+
+        <!-- Rolling hill layers: distance → midground → near → meadow, with a
+             few small trees and distant homes for a lived-in landscape. Their
+             colours reuse the existing --hill-*/--cabin-* variables via
+             color-mix(), so no new time-state is needed for them. -->
+        <svg class="hills" viewBox="0 0 1200 520" preserveAspectRatio="none" aria-hidden="true">
+            <defs>
+                <symbol id="pine" viewBox="0 0 40 74">
+                    <rect x="17" y="54" width="6" height="20" />
+                    <polygon points="20,0 37,33 3,33" />
+                    <polygon points="20,15 34,50 6,50" />
+                </symbol>
+            </defs>
+
+            <path class="hill hill--1"
+                d="M0,214 C90,150 200,146 330,196 C450,242 560,168 700,182 C840,196 960,150 1080,172 C1140,183 1170,178 1200,182 L1200,520 L0,520 Z" />
+
+            <!-- one tiny, low-contrast home on the farthest ridge -->
+            <g class="hut hut--far" transform="translate(140,148) scale(0.5)">
+                <polygon class="hut-roof" points="0,14 20,0 40,14" />
+                <rect class="hut-body" x="4" y="14" width="32" height="18" />
+                <rect class="hut-window" x="15" y="20" width="8" height="8" />
+            </g>
+
+            <path class="hill hill--2"
+                d="M0,312 C110,248 210,300 340,286 C470,272 540,336 690,318 C820,302 900,250 1010,282 C1090,305 1150,296 1200,300 L1200,520 L0,520 Z" />
+
+            <use href="#pine" class="tree tree--hill2" x="120" y="209" width="26" height="46"
+                style="animation-delay:-1.5s" />
+            <use href="#pine" class="tree tree--hill2" x="1060" y="254" width="20" height="36"
+                style="animation-delay:-5s; animation-duration:8s" />
+            <g class="hut hut--mid" transform="translate(897,253) scale(0.65)">
+                <polygon class="hut-roof" points="0,14 20,0 40,14" />
+                <rect class="hut-body" x="4" y="14" width="32" height="18" />
+                <rect class="hut-window" x="15" y="20" width="8" height="8" />
+            </g>
+
+            <path class="hill hill--3"
+                d="M0,392 C140,360 260,392 400,378 C540,364 620,404 760,388 C880,374 980,318 1120,352 C1160,362 1185,360 1200,358 L1200,520 L0,520 Z" />
+
+            <use href="#pine" class="tree tree--hill3" x="520" y="328" width="30" height="54"
+                style="animation-delay:-3s; animation-duration:10s" />
+            <use href="#pine" class="tree tree--hill3" x="1150" y="310" width="25" height="44"
+                style="animation-delay:-6.5s" />
+            <g class="hut hut--near" transform="translate(994,317) scale(0.8)">
+                <polygon class="hut-roof" points="0,14 20,0 40,14" />
+                <rect class="hut-body" x="4" y="14" width="32" height="18" />
+                <rect class="hut-window" x="15" y="20" width="8" height="8" />
+            </g>
+
+            <path class="hill hill--meadow"
+                d="M0,420 C90,398 190,388 300,392 C430,397 520,428 680,416 C840,404 1000,424 1200,410 L1200,520 L0,520 Z" />
+        </svg>
+
+        <!-- The cabin: grounded on the meadow with a soft contact shadow -->
+        <div class="cabin" aria-hidden="true">
+            <svg viewBox="0 0 132 140" preserveAspectRatio="xMidYMax meet">
+                <!-- chimney (drawn first so the roof overlaps its base) -->
+                <rect class="cabin-roof" x="90" y="24" width="12" height="30" />
+                <!-- body + roof overhang -->
+                <rect class="cabin-wall" x="26" y="60" width="80" height="62" />
+                <polygon class="cabin-roof" points="10,64 66,22 122,64" />
+                <!-- porch step -->
+                <rect class="cabin-roof" x="40" y="122" width="52" height="6" />
+                <!-- door -->
+                <rect class="cabin-door" x="44" y="86" width="18" height="36" />
+                <!-- window (warms up in the evening) -->
+                <rect class="cabin-window" x="72" y="74" width="20" height="20" />
+                <!-- muntins over the window -->
+                <rect class="cabin-wall" x="81" y="74" width="2" height="20" />
+                <rect class="cabin-wall" x="72" y="83" width="20" height="2" />
+            </svg>
+        </div>
+
+        <!-- Foreground rise + a couple of soft bushes for depth -->
+        <svg class="grass" viewBox="0 0 1200 120" preserveAspectRatio="none" aria-hidden="true">
+            <ellipse class="bush" cx="150" cy="104" rx="180" ry="58" />
+            <ellipse class="bush" cx="1080" cy="112" rx="210" ry="66" />
+            <path class="grass-line"
+                d="M0,120 L0,66 C120,42 240,60 380,52 C520,44 590,68 760,60 C900,53 1010,42 1200,58 L1200,120 Z" />
+        </svg>
+
+        <!-- Special event: fireflies rising from the meadow just after sunset -->
+        <div class="fireflies" aria-hidden="true"></div>
+
+        <!-- The only UI: the visitor's real local time + a time-of-day label -->
+        <div class="hud">
+            <div class="hud__time">
+                <span class="hud__hm">--:--</span>
+                <span class="hud__ap">--</span>
+                <span class="hud__sec">--</span>
+            </div>
+            <div class="hud__label">NORTHLIGHT</div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
