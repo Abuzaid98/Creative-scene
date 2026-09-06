@@ -15,6 +15,8 @@
       Every layer is positioned and coloured from CSS custom properties
       that script.js recalculates from the visitor's local time.
     -->
+    <!-- The whole scene. Every layer is stacked inside here, back (sky) to
+         front (HUD). The sky itself is the background gradient on .scene. -->
     <main class="scene" aria-label="A landscape that follows your local time of day">
 
         <!-- Atmospheric light pooled on the horizon around sunrise / sunset -->
@@ -61,12 +63,14 @@
             <div class="cloud cloud--7"></div>
         </div>
 
-        <!-- Rare, faint daytime airplane -->
+        <!-- Rare, faint daytime airplane. CSS-timed: crosses roughly once
+             every 5 minutes (first pass ~3 min after load), daytime only. -->
         <div class="airplane-layer" aria-hidden="true">
             <div class="airplane"></div>
         </div>
 
-        <!-- Rare, faint night-only shooting star -->
+        <!-- Rare, faint night-only shooting star. CSS-timed: a brief streak
+             about once every 95 seconds, only while it is night. -->
         <div class="night-fx" aria-hidden="true">
             <div class="shooting-star"></div>
         </div>

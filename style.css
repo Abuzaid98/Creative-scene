@@ -45,8 +45,10 @@ body {
 }
 
 /* ---------- 2. Custom properties ----------
-   Defaults describe deep night, so the scene still reads correctly
-   if JavaScript is disabled. */
+   This block is the bridge between JS and CSS. script.js rewrites these
+   values every second (updateScene); every rule below reads them with var().
+   The defaults describe deep night, so the scene still looks right even
+   before JS runs, or if JavaScript is disabled. */
 :root {
   --sky-1: #06080f;
   /* zenith  */
@@ -139,6 +141,9 @@ body {
 }
 
 /* ---------- 4. Scene & sky ---------- */
+/* The sky itself: one top-to-bottom gradient of 4 colours.
+   JS changes the 4 colours by time of day; @property (above) lets the
+   browser fade between them smoothly between updates. */
 .scene {
   position: fixed;
   inset: 0;
@@ -151,6 +156,8 @@ body {
 }
 
 /* ---------- 5. Afterglow ---------- */
+/* Warm light near the horizon at sunrise/sunset. The glow is centred on the
+   sun's x position (--sun-x) and --golden controls how strong it is. */
 .afterglow {
   position: absolute;
   left: -10%;
@@ -200,6 +207,10 @@ body {
 }
 
 /* ---------- 7. Sun & moon ---------- */
+/* JS sets --sun-x / --sun-y (and moon) as percentages every second; the
+   1s CSS transition below makes the movement smooth between updates.
+   clamp(min, ideal, max) on the width keeps the disc a sensible size on
+   any screen without extra media queries. */
 .celestial {
   position: absolute;
   inset: 0;
@@ -385,6 +396,9 @@ body {
   animation-name: driftBob;
 }
 
+/* Clouds drift across the screen on their own (pure CSS). Each cloud has a
+   different --dur / --delay so they never move in sync; the negative delays
+   mean some are already mid-screen when the page opens. */
 @keyframes drift {
   from {
     transform: translateX(-36vw);
@@ -444,8 +458,11 @@ body {
   background: linear-gradient(to left, rgba(255, 255, 255, 0.45), transparent);
 }
 
-/* long, mostly-invisible cycle with one slow, faint crossing — "rare" done
-   with plain CSS timing rather than a JS random trigger. */
+/* One 300-second loop. The plane is parked off-screen and invisible for
+   0%–78% of it, then fades in and crosses the sky during 78%–94% (~40s),
+   then hides again. So it passes by roughly once every 5 minutes, daytime
+   only. "Rare" is done with plain CSS timing, not a JS random trigger.
+   (With the -55s delay above, the first crossing is ~3 min after load.) */
 @keyframes planeCross {
 
   0%,
@@ -504,6 +521,9 @@ body {
   background: linear-gradient(to left, rgba(255, 255, 255, 0.9), transparent);
 }
 
+/* One 95-second loop. The streak is only visible for the last ~3s (96%–100%),
+   so it's a rare night-time flash. Only shows at all while --star-opacity
+   (the night amount) is above 0. */
 @keyframes shoot {
 
   0%,
@@ -569,11 +589,13 @@ body {
 }
 
 /* Trees and distant homes reuse the existing hill/cabin colours via
-   color-mix() — no new JS-driven variables needed. The plain fill above
-   each color-mix() line is the fallback for browsers without it. */
+   color-mix() (blend two colours in CSS) — no new JS-driven variables needed.
+   The plain `fill` above each color-mix() line is the fallback for browsers
+   without color-mix() support. */
 .tree {
   fill: #14231a;
   transition: fill 1s linear;
+  /* fill-box makes the sway rotate around the tree's own base, not the whole SVG */
   transform-box: fill-box;
   transform-origin: 50% 100%;
   animation: treeSway 9s ease-in-out infinite alternate;
@@ -609,8 +631,8 @@ body {
 
 .hut-window {
   fill: #ffcf7a;
+  /* reuses the cabin's own glow value (calc keeps it dimmer than the cabin) */
   opacity: calc(var(--window-glow) * 0.55);
-  /* dimmer than the main cabin */
   transition: opacity 1.4s linear;
 }
 
@@ -709,6 +731,7 @@ body {
 }
 
 /* ---------- 11. Grass & bushes ---------- */
+/* Foreground rise. A very slow skew gives a subtle breeze feel (pure CSS). */
 .grass {
   position: absolute;
   left: 0;
@@ -741,6 +764,8 @@ body {
 }
 
 /* ---------- 12. Birds (morning) ---------- */
+/* JS sets --bird-opacity from the morning window (birdIntensity); both flocks
+   below share this one fade. Their flying is pure CSS. */
 .birds {
   position: absolute;
   inset: 0;
@@ -880,6 +905,8 @@ body {
 }
 
 /* ---------- 13. Fireflies (evening special event) ---------- */
+/* JS sets --firefly-opacity from the after-sunset window (fireflyIntensity).
+   The individual firefly <span>s are made once by buildFireflies() in JS. */
 .fireflies {
   position: absolute;
   inset: 0;
@@ -928,6 +955,8 @@ body {
 }
 
 /* ---------- 14. HUD ---------- */
+/* The only UI: the visitor's real local time + a one-word scene label.
+   JS (updateClock) fills in the text; CSS just styles it. */
 .hud {
   position: absolute;
   left: clamp(18px, 4.5vw, 46px);
@@ -968,7 +997,9 @@ body {
   opacity: 0.72;
 }
 
-/* ---------- 15. Responsive ---------- */
+/* ---------- 15. Responsive ----------
+   Most sizing already scales via clamp()/vmin/%, so only a few positions
+   need adjusting. Small phones: shorter hills, cabin nudged in. */
 @media (max-width: 640px) {
   .hills {
     height: 54%;
@@ -1008,7 +1039,10 @@ body {
   }
 }
 
-/* ---------- 16. Reduced motion ---------- */
+/* ---------- 16. Reduced motion ----------
+   If the visitor's OS asks for less motion: stop every self-running
+   animation and transition. The scene still shows the correct time
+   (JS keeps updating the variables) — it just doesn't move on its own. */
 @media (prefers-reduced-motion: reduce) {
 
   .star,

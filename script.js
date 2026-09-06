@@ -5,7 +5,7 @@
 
      getCurrentTime()      -> hours in [0, 24)
      calculateSceneState() -> plain object of numbers (colours, light, positions)
-     updateScene()         -> writes ~25 CSS custom properties on <html>
+     updateScene()         -> writes the CSS custom properties on <html>
      updateSpecialEvents() -> firefly + bird opacity from their time windows
      updateClock()         -> the on-screen clock + time-of-day label
      tick()                -> runs all of the above, once per second
@@ -16,21 +16,34 @@
 
 /* ---------- Math helpers ---------- */
 
+// Keeps a number inside a range.
+// Takes a value, a low limit and a high limit (default 0..1).
+// Returns the value, but never below `lo` or above `hi`.
 const clamp = (v, lo = 0, hi = 1) => Math.min(hi, Math.max(lo, v));
+
+// Linear interpolation.
+// Takes a start value `a`, an end value `b` and a progress `k` from 0 to 1.
+// Returns the value that is `k` of the way from `a` to `b`. lerp(0,100,0.5) = 50.
 const lerp = (a, b, k) => a + (b - a) * k;
 
-// Smooth 0..1 ramp between two edges (Hermite). Works when e0 > e1 too,
-// which lets us say "fades out as x rises" with no branching.
+// Smooth 0..1 ramp used to fade things in/out gently instead of a hard switch.
+// Takes two edge values and an input `x`; returns 0 at edge `e0`, 1 at edge `e1`,
+// eased in between. Also works when e0 > e1 ("fades out as x rises"), no `if` needed.
 function smoothstep(e0, e1, x) {
   const k = clamp((x - e0) / (e1 - e0));
   return k * k * (3 - 2 * k);
 }
 
+// Blends two colours.
+// Takes two [r,g,b] arrays and a mix amount `k` (0 = first colour, 1 = second).
+// Returns a new [r,g,b] array.
 const mixRGB = (c1, c2, k) => [
   Math.round(lerp(c1[0], c2[0], k)),
   Math.round(lerp(c1[1], c2[1], k)),
   Math.round(lerp(c1[2], c2[2], k)),
 ];
+
+// Turns an [r,g,b] array into a CSS colour string, e.g. "rgb(20, 30, 40)".
 const rgb = (c) =>
   `rgb(${Math.round(c[0])}, ${Math.round(c[1])}, ${Math.round(c[2])})`;
 
@@ -44,6 +57,9 @@ const forcedHours = (() => {
   return Number.isNaN(n) ? null : ((n % 24) + 24) % 24;
 })();
 
+// Gives the current local time as decimal hours (14.5 means 2:30 PM).
+// Uses ?t= if it is set, otherwise the real device clock.
+// This one number is the only input the whole scene is built from.
 function getCurrentTime() {
   if (forcedHours !== null) return forcedHours;
   const d = new Date();
@@ -52,11 +68,13 @@ function getCurrentTime() {
 
 /* ---------- 2. Sun / moon geometry ---------- */
 
-// Real hours are remapped to a "solar phase" so sunrise lands at 06:00 and
-// sunset at 18:45 (a ~12.75h day). Phase runs 0.25→0.75 through the day and
-// 0.75→1.25 through the night; it is continuous at both seams, so the sun
-// just moves a little faster at night than by day.
 const SUNRISE = 6, SUNSET = 18.75;
+
+// Takes the time as decimal hours.
+// Returns a "solar phase" where sunrise is always 0.25 and sunset always 0.75,
+// no matter how long the real day is. This lets the day be longer than the
+// night while the sun still follows one simple sine curve. The value is
+// continuous at sunrise, sunset and midnight, so nothing ever jumps.
 function solarPhase(hours) {
   if (hours >= SUNRISE && hours < SUNSET) {
     return 0.25 + 0.5 * (hours - SUNRISE) / (SUNSET - SUNRISE);
@@ -66,14 +84,19 @@ function solarPhase(hours) {
   return (0.75 + 0.5 * (into / nightLen)) % 1;
 }
 
-// Elevation: -1 at solar midnight, 0 at sunrise/sunset, +1 at solar noon.
+// Takes the solar phase. Returns how high the sun is:
+// -1 at deep night, 0 at sunrise/sunset, +1 at midday.
+// Almost every colour and light value in the scene is derived from this.
 const sunElevation = (phase) => Math.sin((phase - 0.25) * 2 * Math.PI);
 
-// Horizontal arc (%): rises east/left, sets west/right. Moon uses offset 0.75.
+// Takes the solar phase and an offset (0.25 for the sun, 0.75 for the moon).
+// Returns the left-right screen position (%), so the body rises on the left
+// and sets on the right.
 const arcX = (phase, offset) => 50 - 46 * Math.cos((phase - offset) * 2 * Math.PI);
 
-// Vertical arc (%): ~10% at the peak, ~66% at the horizon, parked off-screen
-// once the body is well below the horizon.
+// Takes an elevation value. Returns the up-down screen position (%):
+// near the top when high, near the horizon at sunrise/sunset,
+// pushed off-screen once the body is well below the horizon.
 const arcY = (elev) => clamp(66 - 58 * elev, 4, 128);
 
 /* ---------- 3. Sky palette keyframes (keyed by sun elevation) ----------
@@ -91,6 +114,9 @@ const SKY_KEYS = [
   { e:  1.00, c: [[46, 118, 214],[92, 166, 228], [150, 200, 236], [198, 226, 243]] }, // midday
 ];
 
+// Takes the sun's elevation. Finds the two nearest palettes in SKY_KEYS and
+// blends them. Returns four [r,g,b] colours for the sky gradient
+// (top, upper, lower, horizon).
 function skyStops(elev) {
   let a = SKY_KEYS[0];
   let b = SKY_KEYS[SKY_KEYS.length - 1];
@@ -110,21 +136,36 @@ const LABELS = [
   [5.0, "NIGHT"], [6.2, "PRE-DAWN"], [7.3, "SUNRISE"], [11.5, "MORNING"],
   [16.5, "DAYLIGHT"], [18.1, "GOLDEN HOUR"], [19.1, "SUNSET"], [20.6, "TWILIGHT"],
 ];
-const timeOfDayLabel = (hours) => (LABELS.find(([end]) => hours < end) || [, "NIGHT"])[1];
+
+// Takes decimal hours. Returns the word to show in the HUD ("MORNING", etc).
+// This is shown as text only — it never changes any visual value.
+function timeOfDayLabel(hours) {
+  const match = LABELS.find(([end]) => hours < end);
+  return match ? match[1] : "NIGHT";
+}
 
 /* ---------- 5. Special-event time windows ---------- */
-// Fireflies: a smooth 0→1→0 hump in the ~hour just after sunset (18:45).
+
+// Takes decimal hours. Returns how visible the fireflies should be (0..1):
+// zero outside 18:45–19:42, and a smooth rise-and-fall inside that window.
 function fireflyIntensity(hours) {
   const START = 18.75, END = 19.7;
   if (hours < START || hours > END) return 0;
   return Math.sin(((hours - START) / (END - START)) * Math.PI);
 }
-// Morning birds: fade in after sunrise, hold, fade out mid-morning.
+
+// Takes decimal hours. Returns how visible the morning birds should be (0..1):
+// fades in after sunrise, holds, fades out by mid-morning.
 function birdIntensity(hours) {
   return smoothstep(6.3, 6.95, hours) * (1 - smoothstep(8.0, 8.6, hours));
 }
 
 /* ---------- 6. Scene state ---------- */
+
+// The main brain. Takes decimal hours.
+// Works out every colour, position and opacity the scene needs and returns
+// them as one plain object. It only calculates — it never touches the page,
+// so the same input always gives the same output (a pure function).
 function calculateSceneState(hours) {
   const phase = solarPhase(hours);
   const elev = sunElevation(phase);
@@ -181,8 +222,13 @@ function calculateSceneState(hours) {
 
 /* ---------- 7. Apply state to CSS ---------- */
 const root = document.documentElement;
+
+// Short helper: set one CSS custom property on <html>.
 const S = (name, value) => root.style.setProperty(name, value);
 
+// Takes the object from calculateSceneState() and writes every value into a
+// CSS custom property on <html>. This is the only place JS hands values to CSS;
+// CSS then repaints the scene from those variables.
 function updateScene(s) {
   S("--sky-1", rgb(s.sky[0]));
   S("--sky-2", rgb(s.sky[1]));
@@ -226,12 +272,16 @@ function updateScene(s) {
   S("--bird-color", s.birdColor);
 }
 
+// Takes decimal hours. Writes the bird and firefly visibility into their
+// CSS variables (both are just opacity of a whole layer).
 function updateSpecialEvents(hours) {
   S("--firefly-opacity", fireflyIntensity(hours).toFixed(3));
   S("--bird-opacity", birdIntensity(hours).toFixed(3));
 }
 
 /* ---------- 8. Clock ---------- */
+
+// The HUD text elements, looked up once.
 const els = {
   hm: document.querySelector(".hud__hm"),
   ap: document.querySelector(".hud__ap"),
@@ -239,6 +289,9 @@ const els = {
   label: document.querySelector(".hud__label"),
 };
 
+// Takes decimal hours. Updates the on-screen clock digits (12-hour format)
+// and the time-of-day label. This is the only part of the scene that writes
+// plain text instead of a CSS variable.
 function updateClock(hours) {
   const h24 = Math.floor(hours);
   const m = Math.floor((hours * 60) % 60);
@@ -252,6 +305,9 @@ function updateClock(hours) {
 }
 
 /* ---------- 9. One frame ---------- */
+
+// One full update: read the time, then refresh the scene, the events and the
+// clock from it. Runs once now (before first paint) and then once per second.
 function tick() {
   const hours = getCurrentTime();
   updateScene(calculateSceneState(hours));
@@ -260,6 +316,10 @@ function tick() {
 }
 
 /* ---------- 10. Build the starfield once ---------- */
+
+// Creates the star <span> elements once at startup, each with a random
+// position, size and twinkle timing. After this, JS never touches them —
+// only the .stars container's opacity changes over the day.
 function buildStars() {
   const layer = document.querySelector(".stars");
   const frag = document.createDocumentFragment();
@@ -279,6 +339,9 @@ function buildStars() {
 }
 
 /* ---------- 11. Build the fireflies once ---------- */
+
+// Creates the firefly <span> elements once at startup, each with a random
+// position (kept in the meadow), size and drift timing.
 function buildFireflies() {
   const layer = document.querySelector(".fireflies");
   const frag = document.createDocumentFragment();
