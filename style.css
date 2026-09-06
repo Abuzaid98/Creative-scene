@@ -444,7 +444,7 @@ body {
   background: rgba(255, 255, 255, 0.6);
   opacity: 0;
   /* base state if the animation is off */
-  animation: planeCross 300s linear -55s infinite;
+  animation: planeCross 10s linear 0s infinite;
 }
 
 .airplane::after {
@@ -458,29 +458,29 @@ body {
   background: linear-gradient(to left, rgba(255, 255, 255, 0.45), transparent);
 }
 
-/* One 300-second loop. The plane is parked off-screen and invisible for
-   0%–78% of it, then fades in and crosses the sky during 78%–94% (~40s),
-   then hides again. So it passes by roughly once every 5 minutes, daytime
-   only. "Rare" is done with plain CSS timing, not a JS random trigger.
-   (With the -55s delay above, the first crossing is ~3 min after load.) */
+/* One 10-second loop. The plane stays invisible for the first
+   50% of the loop, then appears and crosses the sky during the
+   second half. Daylight visibility is controlled separately by
+   --daylight. */
+
 @keyframes planeCross {
 
   0%,
-  78% {
+  45% {
     transform: translate(-10vw, 6vh);
     opacity: 0;
   }
 
-  80% {
+  50% {
+    transform: translate(-5vw, 4vh);
     opacity: 1;
   }
 
-  92% {
-    transform: translate(112vw, -5vh);
+  95% {
+    transform: translate(110vw, -5vh);
     opacity: 1;
   }
 
-  94%,
   100% {
     transform: translate(114vw, -5.3vh);
     opacity: 0;

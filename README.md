@@ -109,7 +109,7 @@ Same HTML every time — only the calculated numbers change.
 | Fireflies | 18:45–19:42 | `fireflyIntensity()` → `--firefly-opacity` on `.fireflies`. A smooth rise-and-fall. |
 | Clouds | fade out at night | `cloudOpacity` from `--daylight`. |
 | Distant house lights | brighter at night | reuse the cabin's `--window-glow`, dimmed with `calc()`. |
-| Airplane | ~once every 5 min, daytime | pure-CSS `@keyframes planeCross` (300s loop, visible ~40s). Gated by `--daylight`. First pass ~3 min after load. |
+| Airplane | Every 10 sec, daytime | Pure-CSS @keyframes planeCross (10s loop, visible during the second half). Gated by `--daylight`. |
 | Shooting star | brief, ~every 95s, night | pure-CSS `@keyframes shoot`. Gated by `--star-opacity`. |
 
 ---
